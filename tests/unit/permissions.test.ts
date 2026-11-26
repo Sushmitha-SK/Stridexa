@@ -1,11 +1,6 @@
+import { assignableMembers, can, canSetAssignee, canSetReviewer, roleFromClerk } from "@/lib/permissions";
 import { describe, expect, it } from "vitest";
-import {
-    assignableMembers,
-    can,
-    canSetAssignee,
-    canSetReviewer,
-    roleFromClerk,
-} from "@/lib/permissions";
+
 
 describe("roleFromClerk", () => {
     it("maps the four roles and defaults unknown roles to viewer", () => {
