@@ -24,7 +24,6 @@ The project is being developed incrementally using a sprint-based workflow, with
 - [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -332,9 +331,3 @@ Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` as GitHub reposit
 2. Make your changes and add tests where relevant.
 3. Run `npm run lint`, `npm run typecheck`, and `npm test`.
 4. Commit with a clear message and open a pull request.
-
----
-
-## License
-
-Distributed under the [MIT License](LICENSE). Replace this section if you choose a different license.
