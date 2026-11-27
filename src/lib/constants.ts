@@ -34,3 +34,24 @@ export const PRIORITY_RANK: Record<Priority, number> = {
     LOW: 1,
     NONE: 0,
 };
+
+export const ACTIVITY_TYPES = [
+    "TASK_CREATED",
+    "TASK_UPDATED",
+    "TASK_MOVED",
+    "TASK_ASSIGNED",
+    "TASK_DELETED",
+    "COMMENT_ADDED",
+    "PROJECT_CREATED",
+] as const;
+export type ActivityTypeName = (typeof ACTIVITY_TYPES)[number];
+
+export const ACTIVITY_LABEL: Record<ActivityTypeName, string> = {
+    TASK_CREATED: "Task created",
+    TASK_UPDATED: "Task updated",
+    TASK_MOVED: "Task moved",
+    TASK_ASSIGNED: "Task assigned",
+    TASK_DELETED: "Task deleted",
+    COMMENT_ADDED: "Comment added",
+    PROJECT_CREATED: "Project created",
+};
