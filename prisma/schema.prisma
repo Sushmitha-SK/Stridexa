@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Clerk Organizations = workspaces. Clerk handles members and roles;
+// we only store the Clerk IDs as strings.
+model Workspace {
+  id         String   @id @default(cuid())
+  clerkOrgId String   @unique // org_... OR user_... (personal workspace)
+  name       String
+  slug       String   @unique
+  createdAt  DateTime @default(now())
+}
