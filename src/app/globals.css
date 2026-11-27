@@ -59,3 +59,13 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Native <dialog> reset so Tailwind classes fully control layout */
+dialog {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Providers } from "@/components/ui/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable}  h-full antialiased`}>
       <body className="min-h-full font-sans">
         <ClerkProvider>
-          {children}
+          <Providers>
+            {children}
+          </Providers>
         </ClerkProvider>
       </body>
     </html>
