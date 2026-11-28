@@ -9,7 +9,7 @@ import { positionBetween, sortByPosition } from "@/lib/position";
 import type { ActionResult, TaskDTO } from "@/lib/types";
 import type { Status } from "@/lib/constants";
 import type { Prisma } from "@/generated/prisma/client";
-import { createTaskSchema, moveTaskSchema } from "./schema";
+import { createTaskSchema, moveTaskSchema, updateTaskSchema } from "./schema";
 
 const fail = (error: string): ActionResult<never> => ({ ok: false, error });
 const VIEW_ONLY = "You have view-only access in this workspace.";
@@ -145,6 +145,50 @@ export async function moveTask(input: unknown): Promise<ActionResult<TaskDTO>> {
                 },
             });
         }
+        return updated;
+    });
+    return { ok: true, data: toTaskDTO(task, existing.project.key) };
+}
+
+
+export async function updateTask(input: unknown): Promise<ActionResult<TaskDTO>> {
+    const ctx = await requireWorkspace();
+    if (!can(ctx.role, "task.edit")) return fail(VIEW_ONLY);
+    const parsed = updateTaskSchema.safeParse(input);
+    if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Invalid update");
+    const { id, ...v } = parsed.data;
+
+    const existing = await ownTask(id, ctx.workspaceId);
+    if (!existing) return fail("Task not found");
+
+    const statusChanged = v.status !== undefined && v.status !== existing.status;
+    // A task that changes column from the panel goes to the bottom of that column.
+    const newPosition = statusChanged ? await appendPosition(existing.projectId, v.status!) : undefined;
+    const key = `${existing.project.key}-${existing.number}`;
+
+    const task = await db.$transaction(async (tx: Prisma.TransactionClient) => {
+        // `undefined` means "leave alone"; `null` means "clear it".
+        const updated = await tx.task.update({
+            where: { id },
+            data: {
+                ...(v.title !== undefined && { title: v.title }),
+                ...(v.description !== undefined && { description: v.description || null }),
+                ...(v.status !== undefined && { status: v.status }),
+                ...(newPosition !== undefined && { position: newPosition }),
+                ...(v.priority !== undefined && { priority: v.priority }),
+                ...(v.dueDate !== undefined && { dueDate: parseDue(v.dueDate) }),
+            },
+        });
+        await recordActivity(tx, {
+            workspaceId: ctx.workspaceId,
+            projectId: existing.projectId,
+            taskId: id,
+            actorId: ctx.userId,
+            type: statusChanged ? "TASK_MOVED" : "TASK_UPDATED",
+            metadata: statusChanged
+                ? { key, title: updated.title, from: existing.status, to: updated.status }
+                : { key, title: updated.title },
+        });
         return updated;
     });
     return { ok: true, data: toTaskDTO(task, existing.project.key) };

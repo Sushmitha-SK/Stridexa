@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTaskSchema, moveTaskSchema } from "@/features/tasks/schema";
+import { createTaskSchema, moveTaskSchema, updateTaskSchema } from "@/features/tasks/schema";
 import { toTaskDTO } from "@/lib/mappers";
 
 const base = { projectKey: "WEB", title: "Fix nav", status: "TODO", priority: "NONE" };
@@ -53,5 +53,22 @@ describe("moveTaskSchema", () => {
     it("rejects empty or oversized positions", () => {
         expect(moveTaskSchema.safeParse({ id: "t1", status: "TODO", position: "" }).success).toBe(false);
         expect(moveTaskSchema.safeParse({ id: "t1", status: "TODO", position: "a".repeat(65) }).success).toBe(false);
+    });
+});
+
+describe("updateTaskSchema", () => {
+    it("needs only an id: every field is optional", () => {
+        expect(updateTaskSchema.safeParse({ id: "t1" }).success).toBe(true);
+        expect(updateTaskSchema.safeParse({ id: "t1", priority: "HIGH" }).success).toBe(true);
+    });
+    it("still validates the fields that are present", () => {
+        expect(updateTaskSchema.safeParse({ id: "t1", title: "  " }).success).toBe(false);
+        expect(updateTaskSchema.safeParse({ id: "t1", status: "NOPE" }).success).toBe(false);
+    });
+    it("lets description and due date be cleared with null", () => {
+        expect(updateTaskSchema.safeParse({ id: "t1", description: null, dueDate: null }).success).toBe(true);
+    });
+    it("requires an id", () => {
+        expect(updateTaskSchema.safeParse({ title: "x" }).success).toBe(false);
     });
 });

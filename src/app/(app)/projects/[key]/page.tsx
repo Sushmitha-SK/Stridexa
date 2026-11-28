@@ -25,6 +25,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ key: s
             projectName={project.name}
             role={ctx.role}
             initialTasks={tasks}
+            currentUserId={ctx.userId}
         />
     );
 }
