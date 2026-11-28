@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTaskSchema, moveTaskSchema } from "@/features/tasks/schema";
+import { createTaskSchema, moveTaskSchema, updateTaskSchema } from "@/features/tasks/schema";
 import { toTaskDTO } from "@/lib/mappers";
 
 const base = { projectKey: "WEB", title: "Fix nav", status: "TODO", priority: "NONE" };
