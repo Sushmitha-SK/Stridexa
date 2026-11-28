@@ -4,7 +4,7 @@ Set up the initial STRIDEXA project repository and development environment. This
 
 ## Changes
 
--Initialized STRIDEXA repository with main and develop branches.
+Initialized STRIDEXA repository with main and develop branches.
 
 Created Next.js application using TypeScript and Tailwind CSS.
 

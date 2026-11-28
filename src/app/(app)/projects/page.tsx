@@ -40,6 +40,22 @@ export default async function Projects() {
                                 {p.description && (
                                     <p className="line-clamp-2 text-sm text-muted">{p.description}</p>
                                 )}
+
+                                <div className="mt-auto flex flex-col gap-1.5">
+                                    <div
+                                        role="progressbar"
+                                        aria-label={`${p.name} progress`}
+                                        aria-valuenow={p.percent}
+                                        aria-valuemin={0}
+                                        aria-valuemax={100}
+                                        className="h-1.5 rounded-full bg-line"
+                                    >
+                                        <div className="h-1.5 rounded-full bg-accent" style={{ width: `${p.percent}%` }} />
+                                    </div>
+                                    <span className="text-xs text-muted">
+                                        {p.done} of {p.total} tasks done
+                                    </span>
+                                </div>
                             </Link>
                         </li>
                     ))}
