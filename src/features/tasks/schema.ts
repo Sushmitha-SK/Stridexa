@@ -20,3 +20,9 @@ export const createTaskSchema = z.object({
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+
+export const moveTaskSchema = z.object({
+    id: z.string().min(1),
+    status: z.enum(STATUSES),
+    position: z.string().min(1).max(64),
+});
