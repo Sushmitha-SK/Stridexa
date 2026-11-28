@@ -9,10 +9,107 @@ datasource db {
 
 // Clerk Organizations = workspaces. Clerk handles members and roles;
 // we only store the Clerk IDs as strings.
+
 model Workspace {
   id         String   @id @default(cuid())
   clerkOrgId String   @unique // org_... OR user_... (personal workspace)
   name       String
   slug       String   @unique
   createdAt  DateTime @default(now())
+
+  projects   Project[]
+  activities Activity[]
+}
+
+enum ActivityType {
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_MOVED
+  TASK_ASSIGNED
+  TASK_DELETED
+  COMMENT_ADDED
+  PROJECT_CREATED
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  key         String // short prefix for task numbers, e.g. "WEB" -> WEB-12
+  description String?
+  archivedAt  DateTime?
+  taskCounter Int       @default(0) // increment in a transaction to get the next task number
+  createdById String // Clerk user id
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  activities Activity[]
+  tasks      Task[]
+
+  @@unique([workspaceId, key])
+  @@index([workspaceId, archivedAt])
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  workspaceId String
+  projectId   String?
+  taskId      String? // Clerk-free: task FK, nulled if the task is deleted.
+  actorId     String // Clerk user id
+  type        ActivityType
+  // e.g. { key: "WEB-3", title: "...", from: "TODO", to: "DONE" }
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task      Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt(sort: Desc)])
+  @@index([projectId, createdAt(sort: Desc)])
+  @@index([taskId, createdAt(sort: Desc)])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  projectId   String
+  number      Int // per-project sequence number
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(NONE)
+  // Fractional-index string (`fractional-indexing` package).
+  // Moving a card only updates this one row instead of renumbering a column.
+  // IMPORTANT: sort by this in JavaScript (plain string comparison), not with
+  // orderBy in SQL. Postgres collations can order base62 keys incorrectly.
+  position    String
+  assigneeId  String? // Clerk user id (wired up in Sprint 4)
+  createdById String // Clerk user id: the reporter
+  dueDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  activities Activity[]
+
+  @@unique([projectId, number])
+  @@index([projectId, status])
+  @@index([assigneeId])
+  @@index([dueDate])
 }
