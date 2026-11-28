@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTaskSchema } from "@/features/tasks/schema";
+import { createTaskSchema, moveTaskSchema } from "@/features/tasks/schema";
 import { toTaskDTO } from "@/lib/mappers";
 
 const base = { projectKey: "WEB", title: "Fix nav", status: "TODO", priority: "NONE" };
@@ -40,5 +40,18 @@ describe("toTaskDTO", () => {
     });
     it("keeps a missing due date as null", () => {
         expect(toTaskDTO({ ...row, dueDate: null }, "WEB").dueDate).toBeNull();
+    });
+});
+
+describe("moveTaskSchema", () => {
+    it("accepts a valid move", () => {
+        expect(moveTaskSchema.safeParse({ id: "t1", status: "DONE", position: "a0V" }).success).toBe(true);
+    });
+    it("rejects an unknown status", () => {
+        expect(moveTaskSchema.safeParse({ id: "t1", status: "BLOCKED", position: "a0" }).success).toBe(false);
+    });
+    it("rejects empty or oversized positions", () => {
+        expect(moveTaskSchema.safeParse({ id: "t1", status: "TODO", position: "" }).success).toBe(false);
+        expect(moveTaskSchema.safeParse({ id: "t1", status: "TODO", position: "a".repeat(65) }).success).toBe(false);
     });
 });
